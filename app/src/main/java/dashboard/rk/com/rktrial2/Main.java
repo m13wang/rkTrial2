@@ -230,21 +230,27 @@ public class Main extends Activity {
                     ProgressBar TempBar = (ProgressBar) findViewById(R.id.Temperature);
 
                     byte ThrottleIndex = 3;
+                    byte CurrentIndex = 4;
+                    byte BatteryIndex = 6;
+                    byte PWMIndex = 10;
+                    byte TempIndex = 8;
 
                     ThrottleBar.setMax(255);
                     ThrottleBar.setProgress(ConvertByte(readBuf[ThrottleIndex]));
 
                     PWMBar.setMax(255);
-                    PWMBar.setProgress(ConvertByte(readBuf[7]));
+                    PWMBar.setProgress(ConvertByte(readBuf[PWMIndex]));
 
-                    CurrentBar.setMax(40);
-
-                    CurrentSum = (float) (CurrentSum*0.95 + (((float)ConvertByte(readBuf[4])/1024*1.024)/0.003)*.05);
-
+                    CurrentBar.setMax(100);
+                    //CurrentSum = (float) (CurrentSum*0.95 + (((float)ConvertByte(readBuf[4])/1024*1.024)/0.003)*.05);
+                    CurrentSum = ConvertByte(readBuf[CurrentIndex])/3;
                     CurrentBar.setProgress((int)CurrentSum);
 
                     BatteryBar.setMax(255);
-                    BatteryBar.setProgress(ConvertByte(readBuf[6]));
+                    BatteryBar.setProgress(ConvertByte(readBuf[BatteryIndex]));
+
+                    TempBar.setMax(100);
+                    TempBar.setProgress(ConvertByte(readBuf[TempIndex]));
 
                     ErrorByteH = ConvertByte(readBuf[1]);
                     ErrorByteL = ConvertByte(readBuf[2]);
@@ -362,11 +368,14 @@ public class Main extends Activity {
 
     public int ConvertByte(byte data)
     {
-        if (data > 0)
+        int mask = 0xFF;
+        return data & mask;
+        /*
+        if (data >= 0)
             return data;
         else
-            return 255 + data;
-
+            return data & mask;
+    */
     }
 
 
