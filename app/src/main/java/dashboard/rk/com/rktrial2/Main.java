@@ -40,8 +40,13 @@ public class Main extends Activity {
     TextView DataLog;
     TextView DataPoints;
     TextView ErrorLog;
+    TextView BatteryN;
+    TextView CurrentN;
+    TextView TemperatureN;
 
     float CurrentSum = 0;
+    int TempCntrl = 0;
+    int BatteryCntrl = 0;
     int DataPackets = 0;
 
     int ErrorByteH = 0;
@@ -180,6 +185,9 @@ public class Main extends Activity {
         ConnectionState = (TextView) findViewById(R.id.TextView12);
         ErrorLog = (TextView) findViewById(R.id.TextViewErrors);
         DataPoints = (TextView) findViewById(R.id.DataPoints);
+        BatteryN = (TextView) findViewById(R.id.TextBatt);
+        CurrentN = (TextView) findViewById(R.id.TextCurr);
+        TemperatureN = (TextView) findViewById(R.id.TextTemp);
     }
 
 
@@ -244,13 +252,18 @@ public class Main extends Activity {
                     CurrentBar.setMax(100);
                     //CurrentSum = (float) (CurrentSum*0.95 + (((float)ConvertByte(readBuf[4])/1024*1.024)/0.003)*.05);
                     CurrentSum = ConvertByte(readBuf[CurrentIndex])/3;
+                    CurrentN.setText("Current :"+CurrentSum);
                     CurrentBar.setProgress((int)CurrentSum);
 
                     BatteryBar.setMax(255);
-                    BatteryBar.setProgress(ConvertByte(readBuf[BatteryIndex]));
+                    BatteryCntrl = ConvertByte(readBuf[TempIndex]);
+                    BatteryN.setText("Battery :"+BatteryCntrl);
+                    BatteryBar.setProgress(BatteryCntrl);
 
-                    TempBar.setMax(100);
-                    TempBar.setProgress(ConvertByte(readBuf[TempIndex]));
+                    TempBar.setMax(125);
+                    TempCntrl = ConvertByte(readBuf[TempIndex]);
+                    TemperatureN.setText("Temperature :"+TempCntrl);
+                    TempBar.setProgress(TempCntrl);
 
                     ErrorByteH = ConvertByte(readBuf[1]);
                     ErrorByteL = ConvertByte(readBuf[2]);
