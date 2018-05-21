@@ -44,9 +44,10 @@ public class Main extends Activity {
     TextView CurrentN;
     TextView TemperatureN;
 
-    float CurrentSum = 0;
+    int CurrentSum = 0;
     int TempCntrl = 0;
     int BatteryCntrl = 0;
+    int ThrottleCntrl = 0;
     int DataPackets = 0;
 
     int ErrorByteH = 0;
@@ -243,22 +244,26 @@ public class Main extends Activity {
                     byte PWMIndex = 10;
                     byte TempIndex = 8;
 
-                    ThrottleBar.setMax(255);
-                    ThrottleBar.setProgress(ConvertByte(readBuf[ThrottleIndex]));
+                    ThrottleBar.setMax(100);
+                    ThrottleCntrl = (ConvertByte(readBuf[ThrottleIndex]));
+                    if(ThrottleCntrl>170) {ThrottleCntrl=170;}
+                    ThrottleCntrl =(ThrottleCntrl-80)*10/9;
+                    ThrottleBar.setProgress(ThrottleCntrl);
 
                     PWMBar.setMax(255);
                     PWMBar.setProgress(ConvertByte(readBuf[PWMIndex]));
 
-                    CurrentBar.setMax(100);
+                    CurrentBar.setMax(40);
                     //CurrentSum = (float) (CurrentSum*0.95 + (((float)ConvertByte(readBuf[4])/1024*1.024)/0.003)*.05);
                     CurrentSum = ConvertByte(readBuf[CurrentIndex])/3;
                     CurrentN.setText("Current :"+CurrentSum);
-                    CurrentBar.setProgress((int)CurrentSum);
+                    CurrentBar.setProgress(CurrentSum);
 
-                    BatteryBar.setMax(255);
-                    BatteryCntrl = ConvertByte(readBuf[TempIndex]);
-                    BatteryN.setText("Battery :"+BatteryCntrl);
+                    BatteryBar.setMax(175);
+                    BatteryCntrl = ConvertByte(readBuf[BatteryIndex]);
                     BatteryBar.setProgress(BatteryCntrl);
+                    BatteryCntrl = BatteryCntrl * 30/17;
+                    BatteryN.setText("Battery :"+BatteryCntrl);
 
                     TempBar.setMax(125);
                     TempCntrl = ConvertByte(readBuf[TempIndex]);
