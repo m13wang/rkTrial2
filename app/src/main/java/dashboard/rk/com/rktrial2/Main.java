@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Environment;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,6 +25,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.util.*;
+import java.text.*;
+
 
 public class Main extends Activity {
 
@@ -35,7 +43,9 @@ public class Main extends Activity {
     public static final int MESSAGE_TOAST = 5;
     public static final int MESSAGE_PACKET = 6;
 
+
     ToggleButton StreamingButton;
+    ToggleButton DataLogButton;
     TextView ConnectionState;
     TextView DataLog;
     TextView DataPoints;
@@ -121,11 +131,65 @@ public class Main extends Activity {
         } else {
             setupConnection();
         }
+  //      TestLogger();
     }
 
+/*
+    private void TestLogger() {
 
+        int rBuff[]={10,20,30,40,50,60,128,254,9,00};
+        String dataline;
 
+        // create a file
+        File file = null;
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        try{
 
+            //Specify the file name and path here
+                    //	File file =new File("C://myfile.txt");
+            Date date = new Date() ;
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss") ;
+            file = new File(path, dateFormat.format(date) + "logfile.csv") ;
+
+            //file = new File(path, "loggerfile2.csv");
+                	// Create the file if the file is not already present
+            if(!file.exists()){
+                file.createNewFile();
+            }
+
+        }catch(IOException ioe){
+            System.out.println("Exception occurred:");
+            ioe.printStackTrace();
+        }
+
+        //generate a string, write append, do this 5 times
+        for (int newline=1; newline<5; newline++){
+            rBuff[1]++;
+            dataline = "";
+            for(int i=1; i<rBuff.length; i++){
+                dataline += rBuff[i];
+                dataline += ",";
+            }
+            dataline += "\n";
+            // write the line
+            try{
+                //Here true is to append the content to file
+                FileWriter fw = new FileWriter(file,true);
+                //BufferedWriter writer give better performance
+                BufferedWriter bw = new BufferedWriter(fw);
+                bw.write(dataline);
+                //Closing BufferedWriter Stream
+                bw.close();
+
+                System.out.println("Data successfully appended at the end of file");
+
+            }catch(IOException ioe){
+                System.out.println("Exception occurred:");
+                ioe.printStackTrace();
+            }
+        }
+    }
+*/
     private void setupConnection()
     {
         // Initialize the BluetoothChatService to perform bluetooth connections
@@ -144,22 +208,6 @@ public class Main extends Activity {
 
 
         });
-
-        //ShareButton = (Button) findViewById(R.id.share);
-        //ShareButton.setOnClickListener(new OnClickListener() {
-        //	public void onClick(View v) {
-
-        //LinearLayout spaceshipImage = (LinearLayout) findViewById(R.id.UnitsLayout);
-        //Animation hyperspaceJumpAnimation = AnimationUtils.loadAnimation(Main.this, R.anim.hyperspace_jump);
-        //spaceshipImage.startAnimation(hyperspaceJumpAnimation);
-        //       Intent myIntent = new Intent(getBaseContext(), dash1.class);
-
-        //       startActivity(myIntent);
-
-        //	}
-
-
-        //});
 
 
         StreamingButton = (ToggleButton) findViewById(R.id.StreamingToggle);
@@ -282,12 +330,38 @@ public class Main extends Activity {
                     LastErrorByteL = ErrorByteL;
                     LastErrorByteH = ErrorByteH;
 
-
-
                     DataPoints.setText("Data Points:"+DataPackets);
                     DataPackets++;
 
+                    /*  If logging just switced on = open the file for writing
+                     Need a unique name in case a file was just written. (Don't overwrite it) */
+
+                    String dataline;
+                    DataLogButton = (ToggleButton) findViewById(R.id.LoggingToggle);
+
+                    /* new click opens a new file with unique name */
+                    DataLogButton.setOnClickListener(new OnClickListener() {
+                                                         public void onClick(View v) {
+                                                             DataLogger.init();
+                                                         }
+                                                     });
+
+                    // When logging is on, write the entire readBuf() to the write stream
+                    if (DataLogButton.isChecked())
+                    {
+                    // add commas and line feed to readbuf
+                        dataline = "";
+                        for(int i=1; i<readBuf.length; i++){
+                            dataline += ConvertByte(readBuf[i]);
+                            dataline += ",";
+                        }
+                        dataline += "\n";
+                    // write the line
+                        DataLogger.append (dataline);
+
+                    }
                     break;
+
                 case MESSAGE_DEVICE_NAME:
                     // save the connected device's name
                     mConnectedDeviceName = msg.getData().getString(DEVICE_NAME);
